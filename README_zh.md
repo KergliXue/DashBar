@@ -64,11 +64,11 @@ WKWebView 默认不在弹窗内导航到外部页面。通过 `data-open` 属性
 | 无 `data-open`（默认） | 在外部浏览器中打开 |
 
 ```html
-<!-- 外部浏览器：去充值 -->
-<a href="https://platform.deepseek.com/top_up" data-open="browser">去充值</a>
+<!-- 外部浏览器：打开必应 -->
+<a href="https://bing.com" data-open="browser">去充值</a>
 
 <!-- 弹窗内：切换到设置页 -->
-<a href="settings.html" data-open="popover">Settings</a>
+<a href="https://bing.com" data-open="popover">Settings</a>
 ```
 
 ### JS↔Swift 桥接

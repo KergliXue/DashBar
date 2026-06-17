@@ -10,10 +10,15 @@ final class WebContentController: NSObject {
     /// PopoverController uses this to show/hide the nav bar.
     var onNavigationStateChanged: (() -> Void)?
 
+    /// Called when a link is opened in the external browser (no data-open or data-open="browser").
+    var onOpenExternalURL: (() -> Void)?
+
     /// The original home URL — loaded for the plugin
     private var homeURL: URL?
     /// Did we ever navigate away from the home page?
     private var hasNavigated: Bool { homeURL != nil && webView.url != homeURL }
+    /// Last output pushed via pushOutputToJS, replayed when navigating back home
+    private var lastOutput: String?
 
     override init() {
         let config = WKWebViewConfiguration()
@@ -59,6 +64,7 @@ final class WebContentController: NSObject {
     }
 
     func pushOutputToJS(output: String) {
+        lastOutput = output
         let escaped = output
             .replacingOccurrences(of: "\\", with: "\\\\")
             .replacingOccurrences(of: "`", with: "\\`")
@@ -122,6 +128,11 @@ extension WebContentController: WKNavigationDelegate {
         """
         webView.evaluateJavaScript(js)
 
+        // Replay cached output when returning to the home page (goHome re-loads the file, which resets "Loading...")
+        if isOnHome, let lastOutput {
+            pushOutputToJS(output: lastOutput)
+        }
+
         // Notify host that navigation state changed (to show/hide nav bar)
         onNavigationStateChanged?()
     }
@@ -141,6 +152,9 @@ extension WebContentController: WKScriptMessageHandler {
                let urlStr = dict["url"] as? String,
                let url = URL(string: urlStr) {
                 NSWorkspace.shared.open(url)
+                Task { @MainActor [weak self] in
+                    self?.onOpenExternalURL?()
+                }
             } else {
                 self.onBridgeMessage?(message.name, message.body)
             }

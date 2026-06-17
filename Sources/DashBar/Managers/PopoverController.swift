@@ -127,6 +127,17 @@ final class PopoverController {
         wc.onNavigationStateChanged = { [weak self] in
             self?.updateNavBar()
         }
+        wc.onOpenExternalURL = { [weak self] in
+            self?.closeAndGoHome()
+        }
+    }
+
+    /// Close popover and navigate webview back to home (for external-link opens)
+    func closeAndGoHome() {
+        // Only reset to home if a setting allows it; defaults to true
+        guard UserDefaults.standard.bool(forKey: "closePopoverOnExternalLink") else { return }
+        webController?.goHome()
+        hide()
     }
 
     private func updateNavBar() {

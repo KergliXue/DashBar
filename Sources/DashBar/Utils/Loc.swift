@@ -57,5 +57,6 @@ enum Loc {
         "disablePlugin":   ["en": "Disable Plugin",         "zh": "关闭插件"],
         "refreshNow":      ["en": "Refresh Now",            "zh": "立即刷新"],
         "quitDashBar":     ["en": "Quit DashBar",           "zh": "退出 DashBar"],
+        "closePopoverOnExternalLink": ["en": "Close popover after opening external link", "zh": "外部链接打开后自动关闭弹窗"],
     ]
 }

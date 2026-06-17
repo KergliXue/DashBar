@@ -21,6 +21,7 @@ final class SettingsWindowController: NSObject {
     private var launchAtLoginCheckbox: NSButton!
     private var launchSilentlyCheckbox: NSButton!
     private var keepInDockCheckbox: NSButton!
+    private var closePopoverOnExternalLinkCheckbox: NSButton!
 
     override init() {
         window = NSWindow(
@@ -114,13 +115,19 @@ final class SettingsWindowController: NSObject {
         keepInDockCheckbox.controlSize = .small
         v.addSubview(keepInDockCheckbox)
 
+        // Close popover on external link
+        closePopoverOnExternalLinkCheckbox = NSButton(checkboxWithTitle: Loc.tr("closePopoverOnExternalLink"), target: self, action: #selector(toggleClosePopoverOnExternalLink))
+        closePopoverOnExternalLinkCheckbox.frame = NSRect(x: 20, y: y0 - 132, width: 540, height: 22)
+        closePopoverOnExternalLinkCheckbox.controlSize = .small
+        v.addSubview(closePopoverOnExternalLinkCheckbox)
+
         // Language selector
         let langLabel = NSTextField(labelWithString: Loc.tr("language"))
         langLabel.font = NSFont.systemFont(ofSize: 11, weight: .semibold)
-        langLabel.frame = NSRect(x: 20, y: y0 - 142, width: 100, height: 18)
+        langLabel.frame = NSRect(x: 20, y: y0 - 174, width: 100, height: 18)
         v.addSubview(langLabel)
 
-        let langPopup = NSPopUpButton(frame: NSRect(x: 120, y: y0 - 146, width: 120, height: 22))
+        let langPopup = NSPopUpButton(frame: NSRect(x: 120, y: y0 - 178, width: 120, height: 22))
         langPopup.controlSize = .small
         for lang in Loc.availableLanguages {
             langPopup.addItem(withTitle: lang.label)
@@ -141,11 +148,11 @@ final class SettingsWindowController: NSObject {
         let langHint = NSTextField(labelWithString: Loc.tr("restartForLang"))
         langHint.font = NSFont.systemFont(ofSize: 9)
         langHint.textColor = .tertiaryLabelColor
-        langHint.frame = NSRect(x: 250, y: y0 - 144, width: 300, height: 14)
+        langHint.frame = NSRect(x: 250, y: y0 - 176, width: 300, height: 14)
         v.addSubview(langHint)
 
         // Separator
-        let sep = NSBox(frame: NSRect(x: 20, y: y0 - 180, width: 540, height: 1))
+        let sep = NSBox(frame: NSRect(x: 20, y: y0 - 212, width: 540, height: 1))
         sep.boxType = .separator
         v.addSubview(sep)
 
@@ -153,7 +160,7 @@ final class SettingsWindowController: NSObject {
         let restartBtn = NSButton(title: Loc.tr("restart"), target: self, action: #selector(restartDashBar))
         restartBtn.bezelStyle = .rounded
         restartBtn.controlSize = .small
-        restartBtn.frame = NSRect(x: 20, y: y0 - 215, width: 150, height: 24)
+        restartBtn.frame = NSRect(x: 20, y: y0 - 247, width: 150, height: 24)
         v.addSubview(restartBtn)
 
         return v
@@ -261,6 +268,10 @@ final class SettingsWindowController: NSObject {
         launchSilentlyCheckbox.state = UserDefaults.standard.bool(forKey: "launchSilently") ? .on : .off
         keepInDockCheckbox.state = UserDefaults.standard.bool(forKey: "keepInDock") ? .on : .off
         launchSilentlyCheckbox.isEnabled = launchAtLoginCheckbox.state == .on
+        if UserDefaults.standard.object(forKey: "closePopoverOnExternalLink") == nil {
+            UserDefaults.standard.set(true, forKey: "closePopoverOnExternalLink")
+        }
+        closePopoverOnExternalLinkCheckbox.state = UserDefaults.standard.bool(forKey: "closePopoverOnExternalLink") ? .on : .off
     }
 
     @objc private func toggleLaunchAtLogin() {
@@ -279,6 +290,10 @@ final class SettingsWindowController: NSObject {
         if window.isVisible {
             NSApp.setActivationPolicy(keep ? .regular : .accessory)
         }
+    }
+
+    @objc private func toggleClosePopoverOnExternalLink() {
+        UserDefaults.standard.set(closePopoverOnExternalLinkCheckbox.state == .on, forKey: "closePopoverOnExternalLink")
     }
 
     @objc private func changeLanguage(_ sender: NSPopUpButton) {
