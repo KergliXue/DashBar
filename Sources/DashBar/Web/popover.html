@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif;
+    background: transparent;
+    color: #e0e0e0;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .app-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    padding: 16px;
+  }
+  .header {
+    text-align: center;
+    padding: 8px 0 12px 0;
+    font-size: 12px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.5);
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+  }
+  #plugins-container {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex: 1;
+    overflow-y: auto;
+  }
+  .plugin-card {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 10px;
+    padding: 12px 16px;
+    cursor: default;
+    transition: background 0.15s;
+  }
+  .plugin-card:hover {
+    background: rgba(255,255,255,0.12);
+  }
+  .plugin-card.has-page {
+    cursor: pointer;
+  }
+  .plugin-card.has-page::after {
+    content: "›";
+    float: right;
+    color: rgba(255,255,255,0.25);
+    font-size: 18px;
+    line-height: 1;
+  }
+  .plugin-name {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: rgba(255,255,255,0.35);
+    margin-bottom: 6px;
+  }
+  .plugin-output {
+    font-size: 14px;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    word-break: break-word;
+    color: #d4d4d4;
+  }
+  .empty-state {
+    text-align: center;
+    color: rgba(255,255,255,0.3);
+    font-size: 13px;
+    padding: 32px 0;
+    line-height: 1.6;
+  }
+  .empty-state code {
+    background: rgba(255,255,255,0.08);
+    border-radius: 4px;
+    padding: 2px 6px;
+    font-size: 12px;
+  }
+  .back-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-bottom: 12px;
+    cursor: pointer;
+    color: rgba(255,255,255,0.5);
+    font-size: 13px;
+  }
+  .back-bar:hover { color: rgba(255,255,255,0.8); }
+  .back-arrow { font-size: 16px; }
+</style>
+</head>
+<body>
+<div class="app-container">
+  <div class="header">DashBar</div>
+  <div id="back-bar" class="back-bar" style="display:none;" onclick="goBackToOverview()">
+    <span class="back-arrow">←</span><span>All Plugins</span>
+  </div>
+  <div id="plugins-container"></div>
+</div>
+<script>
+  const pluginData = {};
+  const pluginMeta = {};  // { name: { hasPage: bool } }
+
+  function setPluginMeta(name, meta) {
+    pluginMeta[name] = meta;
+    renderAll();
+  }
+
+  function updatePlugin(name, output) {
+    pluginData[name] = output;
+    renderAll();
+  }
+
+  function onPluginCardClick(name) {
+    if (pluginMeta[name] && pluginMeta[name].hasPage) {
+      window.webkit.messageHandlers.bridge.postMessage({
+        action: "openPluginPage",
+        pluginName: name
+      });
+    }
+  }
+
+  function goBackToOverview() {
+    window.webkit.messageHandlers.bridge.postMessage({
+      action: "showOverview"
+    });
+  }
+
+  function showBackButton() {
+    document.getElementById('back-bar').style.display = 'flex';
+    document.querySelector('.header').style.display = 'none';
+    document.getElementById('plugins-container').innerHTML = '';
+  }
+
+  function hideBackButton() {
+    document.getElementById('back-bar').style.display = 'none';
+    document.querySelector('.header').style.display = '';
+  }
+
+  function renderAll() {
+    const container = document.getElementById('plugins-container');
+    const names = Object.keys(pluginData);
+    if (names.length === 0) {
+      container.innerHTML =
+        '<div class="empty-state">No scripts running.<br>Add plugins to <code>~/DashBar/plugins/</code></div>';
+      return;
+    }
+    const sorted = names.sort((a, b) => a.localeCompare(b));
+    container.innerHTML = sorted
+      .map(name => {
+        const meta = pluginMeta[name] || {};
+        const cls = meta.hasPage ? 'plugin-card has-page' : 'plugin-card';
+        const onclick = meta.hasPage ? `onclick="onPluginCardClick('${escapeAttr(name)}')"` : '';
+        return `<div class="${cls}" ${onclick}>
+          <div class="plugin-name">${escapeHtml(name)}</div>
+          <div class="plugin-output">${escapeHtml(pluginData[name])}</div>
+        </div>`;
+      })
+      .join('');
+  }
+
+  function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
+  function escapeAttr(text) {
+    return text.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+  }
+
+  renderAll();
+</script>
+</body>
+</html>
