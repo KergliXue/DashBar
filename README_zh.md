@@ -8,10 +8,16 @@ macOS 菜单栏插件管理器 — 把你的脚本变成菜单栏小工具。
 
 - **一个插件 = 一个菜单栏图标**：SF Symbols、自定义 PNG/PDF 图标、图标+文本
 - **HTML 弹窗**：内置 WKWebView 渲染，支持 JS↔Swift 桥接，自动适配明暗模式
-- **定时执行脚本**：文件名约定 `name.{interval}.sh` 或 manifest.json 配置
+- **定时执行脚本**：manifest.json 配置灵活的执行间隔
 - **多语言脚本**：shebang 自动检测，支持 bash/python/ruby/node/swift
 - **管理窗口**：偏好设置 + 插件管理（启用/禁用），中文/英文
 - **开机自启**：通过 SMAppService 注册登录项
+
+## 截图
+
+![天气插件](screenshots/weather_example.png)
+
+![插件管理](screenshots/plugin_mangement.png)
 
 ## 插件格式
 
@@ -59,21 +65,23 @@ WKWebView 默认不在弹窗内导航到外部页面。通过 `data-open` 属性
 
 | `data-open` 属性 | 行为 |
 |---|---|
+| `data-open="popover"` | 在弹窗内导航（显示前进/后退/主页导航栏） |
 | `data-open="browser"` | 在外部浏览器中打开 |
-| `data-open="popover"` | 在弹窗内导航 |
-| 无 `data-open`（默认） | 在外部浏览器中打开 |
+| 无 `data-open`（默认） | 在外部浏览器中打开，然后关闭弹窗并回到主页 |
 
 ```html
-<!-- 外部浏览器：打开必应 -->
-<a href="https://bing.com" data-open="browser">去充值</a>
+<!-- 外部浏览器：打开 DeepSeek 充值页 -->
+<a href="https://platform.deepseek.com/top_up" data-open="browser">去充值</a>
 
-<!-- 弹窗内：切换到设置页 -->
-<a href="https://bing.com" data-open="popover">Settings</a>
+<!-- 弹窗内导航：切换到设置页 -->
+<a href="https://example.com/settings" data-open="popover">设置</a>
 ```
+
+链接在外部浏览器打开后，弹窗会自动关闭并回到主页。可以在 **偏好设置 →「外部链接打开后自动关闭弹窗」** 中关闭此行为。
 
 ### JS↔Swift 桥接
 
-```
+```js
 window.webkit.messageHandlers.bridge.postMessage({action: "refresh"})
 ```
 
