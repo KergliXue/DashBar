@@ -39,6 +39,9 @@ Inspired by [SwiftBar](https://github.com/swiftbar/SwiftBar)'s plugin mechanism 
   "html": "index.html",
   "popoverWidth": 380,
   "popoverHeight": 300,
+  "popoverAutoHeight": false,
+  "popoverMinHeight": 200,
+  "popoverMaxHeight": 600,
   "sfSymbol": "cloud.sun.fill",
   "showText": false
 }
@@ -51,6 +54,9 @@ Inspired by [SwiftBar](https://github.com/swiftbar/SwiftBar)'s plugin mechanism 
 | `script` | Script file name |
 | `html` | Popover HTML (optional, plain text if omitted) |
 | `popoverWidth/Height` | Popover dimensions |
+| `popoverAutoHeight` | Enable auto-height (overrides `popoverHeight`) |
+| `popoverMaxHeight` | Max height clamp when auto-height is on |
+| `popoverMinHeight` | Min height clamp when auto-height is on |
 | `sfSymbol` | SF Symbols icon name |
 | `icon` | Custom icon file path |
 | `showText` | Show script output text next to icon |

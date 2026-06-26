@@ -39,6 +39,9 @@ macOS 菜单栏插件管理器 — 把你的脚本变成菜单栏小工具。
   "html": "index.html",
   "popoverWidth": 380,
   "popoverHeight": 300,
+  "popoverAutoHeight": false,
+  "popoverMinHeight": 200,
+  "popoverMaxHeight": 600,
   "sfSymbol": "cloud.sun.fill",
   "showText": false
 }
@@ -51,6 +54,9 @@ macOS 菜单栏插件管理器 — 把你的脚本变成菜单栏小工具。
 | `script` | 脚本文件名 |
 | `html` | 弹窗 HTML（可选，不填则纯文本） |
 | `popoverWidth/Height` | 弹窗尺寸 |
+| `popoverAutoHeight` | 启用自动高度（覆盖 `popoverHeight`） |
+| `popoverMaxHeight` | 自动高度上限 |
+| `popoverMinHeight` | 自动高度下限 |
 | `sfSymbol` | SF Symbols 图标名 |
 | `icon` | 自定义图标文件路径 |
 | `showText` | 是否在图标旁显示脚本输出文本 |

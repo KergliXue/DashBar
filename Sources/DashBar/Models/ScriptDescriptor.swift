@@ -7,6 +7,9 @@ struct PluginManifest: Codable {
     var html: String?
     var popoverWidth: Double?
     var popoverHeight: Double?
+    var popoverAutoHeight: Bool?
+    var popoverMaxHeight: Double?
+    var popoverMinHeight: Double?
     var sfSymbol: String?
     var icon: String?
     var showText: Bool?
@@ -26,6 +29,11 @@ struct ScriptDescriptor {
     let showText: Bool
     let pluginDir: URL
 
+    /// Height behaviour
+    let autoHeight: Bool
+    let maxHeight: Double?
+    let minHeight: Double?
+
     /// Enabled state (loaded from manifest or state file)
     var enabled: Bool
 
@@ -40,7 +48,10 @@ struct ScriptDescriptor {
         iconPath: String? = nil,
         showText: Bool = false,
         pluginDir: URL,
-        enabled: Bool = true
+        enabled: Bool = true,
+        autoHeight: Bool = false,
+        maxHeight: Double? = nil,
+        minHeight: Double? = nil
     ) {
         self.name = name
         self.path = path
@@ -53,6 +64,9 @@ struct ScriptDescriptor {
         self.showText = showText
         self.pluginDir = pluginDir
         self.enabled = enabled
+        self.autoHeight = autoHeight
+        self.maxHeight = maxHeight
+        self.minHeight = minHeight
     }
 }
 

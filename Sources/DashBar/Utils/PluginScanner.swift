@@ -111,7 +111,10 @@ final class PluginScanner {
             iconPath: iconPath,
             showText: manifest.showText ?? false,
             pluginDir: url,
-            enabled: enabled
+            enabled: enabled,
+            autoHeight: manifest.popoverAutoHeight ?? false,
+            maxHeight: manifest.popoverMaxHeight,
+            minHeight: manifest.popoverMinHeight
         )
     }
 

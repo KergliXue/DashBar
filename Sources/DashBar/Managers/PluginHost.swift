@@ -46,6 +46,19 @@ final class PluginHost {
         popover.setContent(webController.webView)
         popover.bindWebController(webController)
 
+        if let size = descriptor.popoverSize {
+            popover.resize(to: size)
+        }
+
+        // Configure auto-height if enabled
+        if descriptor.autoHeight {
+            popover.configureAutoHeight(
+                enabled: true,
+                min: descriptor.minHeight.map { CGFloat($0) },
+                max: descriptor.maxHeight.map { CGFloat($0) }
+            )
+        }
+
         if let htmlPath = descriptor.htmlPath {
             webController.loadPluginHTML(path: htmlPath, pluginName: descriptor.name)
         } else {

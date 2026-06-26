@@ -20,6 +20,11 @@ final class PopoverController {
 
     private let defaultSize = NSSize(width: 360, height: 420)
 
+    // MARK: - Auto-height configuration
+    private var autoHeight = false
+    private var minHeight: CGFloat?
+    private var maxHeight: CGFloat?
+
     init() {
         window = NSWindow(
             contentRect: NSRect(origin: .zero, size: defaultSize),
@@ -130,6 +135,56 @@ final class PopoverController {
         wc.onOpenExternalURL = { [weak self] in
             self?.closeAndGoHome()
         }
+        wc.onContentHeightChanged = { [weak self] height in
+            self?.applyContentHeight(height)
+        }
+    }
+
+    /// Configure auto-height behavior. When enabled, the popover resizes to fit web content
+    /// clamped by the given min/max bounds.
+    func configureAutoHeight(enabled: Bool, min: CGFloat?, max: CGFloat?) {
+        autoHeight = enabled
+        minHeight = min
+        maxHeight = max
+    }
+
+    /// Resize the popover to a new content height, keeping the top edge anchored.
+    /// Applies min/max clamping on top of the reported height.
+    private func applyContentHeight(_ contentHeight: CGFloat) {
+        guard autoHeight, contentHeight > 0 else { return }
+
+        var h = contentHeight
+        // Nav bar: when visible, the webview top is below it, so we need to account for it
+        if let wc = webController, !wc.isOnHome, !navBar.isHidden {
+            h += navBarHeight
+        }
+
+        if let min = minHeight { h = max(h, min) }
+        if let max = maxHeight { h = min(h, max) }
+
+        // Clamp to screen visible area: don't push below the screen bottom
+        if let screen = window.screen ?? NSScreen.main {
+            let screenBottom = screen.visibleFrame.minY
+            let currentTop = window.frame.origin.y + window.frame.height
+            let newBottom = currentTop - h
+            if newBottom < screenBottom {
+                h = currentTop - screenBottom
+            }
+        }
+
+        resizeHeight(to: h)
+    }
+
+    /// Change only the height of the window while preserving the top edge position.
+    private func resizeHeight(to height: CGFloat) {
+        let currentTop = window.frame.origin.y + window.frame.height
+        let newFrame = NSRect(
+            x: window.frame.origin.x,
+            y: currentTop - height,
+            width: window.frame.width,
+            height: height
+        )
+        window.setFrame(newFrame, display: true, animate: true)
     }
 
     /// Close popover and navigate webview back to home (for external-link opens)

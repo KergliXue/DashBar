@@ -13,6 +13,9 @@ final class WebContentController: NSObject {
     /// Called when a link is opened in the external browser (no data-open or data-open="browser").
     var onOpenExternalURL: (() -> Void)?
 
+    /// Called when the rendered content height changes (auto-height mode). Value is in points.
+    var onContentHeightChanged: ((CGFloat) -> Void)?
+
     /// The original home URL — loaded for the plugin
     private var homeURL: URL?
     /// Did we ever navigate away from the home page?
@@ -71,6 +74,29 @@ final class WebContentController: NSObject {
             .replacingOccurrences(of: "$", with: "\\$")
         let js = "if(typeof pushOutput==='function'){pushOutput(`\(escaped)`);}"
         webView.evaluateJavaScript(js)
+        // Re-measure height after output may have changed content
+        scheduleContentHeightCheck(delay: 0.15)
+    }
+
+    // MARK: - Content height measurement (auto-height)
+
+    private func scheduleContentHeightCheck(delay: TimeInterval = 0.0) {
+        Task { @MainActor [weak self] in
+            if delay > 0 {
+                try? await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
+            }
+            self?.measureAndFireContentHeight()
+        }
+    }
+
+    private func measureAndFireContentHeight() {
+        let js = "document.body.scrollHeight || document.documentElement.scrollHeight || 0"
+        webView.evaluateJavaScript(js) { [weak self] result, _ in
+            guard let self, let height = result as? CGFloat, height > 0 else { return }
+            Task { @MainActor [weak self] in
+                self?.onContentHeightChanged?(height)
+            }
+        }
     }
 
     // MARK: - Navigation actions
@@ -135,6 +161,9 @@ extension WebContentController: WKNavigationDelegate {
 
         // Notify host that navigation state changed (to show/hide nav bar)
         onNavigationStateChanged?()
+
+        // Measure content height for auto-height mode (with slight delay for layout)
+        scheduleContentHeightCheck(delay: 0.15)
     }
 }
 
