@@ -58,5 +58,10 @@ enum Loc {
         "refreshNow":      ["en": "Refresh Now",            "zh": "立即刷新"],
         "quitDashBar":     ["en": "Quit DashBar",           "zh": "退出 DashBar"],
         "closePopoverOnExternalLink": ["en": "Close popover after opening external link", "zh": "外部链接打开后自动关闭弹窗"],
+        "transparency":     ["en": "Transparency",            "zh": "透明度"],
+        "transparency_glass":  ["en": "Frosted Glass",        "zh": "毛玻璃"],
+        "transparency_medium": ["en": "Medium Blur",           "zh": "中等模糊"],
+        "transparency_light":  ["en": "Light Blur",            "zh": "轻度模糊"],
+        "transparency_solid":  ["en": "Solid",                 "zh": "不透明"],
     ]
 }

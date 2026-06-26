@@ -22,6 +22,7 @@ final class SettingsWindowController: NSObject {
     private var launchSilentlyCheckbox: NSButton!
     private var keepInDockCheckbox: NSButton!
     private var closePopoverOnExternalLinkCheckbox: NSButton!
+    private var transparencyPopup: NSPopUpButton!
 
     override init() {
         window = NSWindow(
@@ -150,6 +151,29 @@ final class SettingsWindowController: NSObject {
         langHint.textColor = .tertiaryLabelColor
         langHint.frame = NSRect(x: 250, y: y0 - 176, width: 300, height: 14)
         v.addSubview(langHint)
+
+        // Transparency
+        let transparencyLabel = NSTextField(labelWithString: Loc.tr("transparency"))
+        transparencyLabel.font = NSFont.systemFont(ofSize: 11, weight: .semibold)
+        transparencyLabel.frame = NSRect(x: 20, y: y0 - 210, width: 100, height: 18)
+        v.addSubview(transparencyLabel)
+
+        transparencyPopup = NSPopUpButton(frame: NSRect(x: 120, y: y0 - 214, width: 150, height: 22))
+        transparencyPopup.controlSize = .small
+        for level in PopoverTransparency.allCases {
+            transparencyPopup.addItem(withTitle: Loc.tr(level.labelKey))
+            transparencyPopup.lastItem?.identifier = NSUserInterfaceItemIdentifier(level.rawValue)
+        }
+        // Select current
+        let currentTransparency = PopoverTransparency.current
+        for item in transparencyPopup.itemArray {
+            if item.identifier?.rawValue == currentTransparency.rawValue {
+                transparencyPopup.select(item)
+            }
+        }
+        transparencyPopup.target = self
+        transparencyPopup.action = #selector(changeTransparency(_:))
+        v.addSubview(transparencyPopup)
 
         // Separator
         let sep = NSBox(frame: NSRect(x: 20, y: y0 - 212, width: 540, height: 1))
@@ -306,6 +330,15 @@ final class SettingsWindowController: NSObject {
         }
     }
 
+    @objc private func changeTransparency(_ sender: NSPopUpButton) {
+        guard let item = sender.selectedItem,
+              let raw = item.identifier?.rawValue,
+              let level = PopoverTransparency(rawValue: raw) else { return }
+        PopoverTransparency.current = level
+        // Notify PluginHost to refresh all popover visual effects
+        NotificationCenter.default.post(name: .transparencyChanged, object: nil)
+    }
+
     @objc private func restartDashBar() {
         let task = Process()
         task.executableURL = URL(fileURLWithPath: "/usr/bin/env")
@@ -412,4 +445,5 @@ extension SettingsWindowController: NSTableViewDataSource, NSTableViewDelegate {
 
 extension Notification.Name {
     static let pluginsChanged = Notification.Name("DashBarPluginsChanged")
+    static let transparencyChanged = Notification.Name("DashBarTransparencyChanged")
 }

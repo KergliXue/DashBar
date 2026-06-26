@@ -1,5 +1,48 @@
 import AppKit
 
+/// Transparency level for the popover background.
+enum PopoverTransparency: String, CaseIterable {
+    case glass = "glass"
+    case medium = "medium"
+    case light = "light"
+    case solid = "solid"
+
+    var labelKey: String { "transparency_\(rawValue)" }
+
+    var material: NSVisualEffectView.Material {
+        switch self {
+        case .glass:  return .underWindowBackground
+        case .medium: return .menu
+        case .light:  return .popover
+        case .solid:  return .windowBackground
+        }
+    }
+
+    var blendingMode: NSVisualEffectView.BlendingMode {
+        switch self {
+        case .solid: return .withinWindow
+        default:     return .behindWindow
+        }
+    }
+
+    var state: NSVisualEffectView.State {
+        .active
+    }
+
+    static var userDefaultsKey: String { "popoverTransparency" }
+
+    static var current: PopoverTransparency {
+        get {
+            guard let raw = UserDefaults.standard.string(forKey: userDefaultsKey),
+                  let level = PopoverTransparency(rawValue: raw) else { return .glass }
+            return level
+        }
+        set {
+            UserDefaults.standard.set(newValue.rawValue, forKey: userDefaultsKey)
+        }
+    }
+}
+
 @MainActor
 final class PopoverController {
 
@@ -52,6 +95,7 @@ final class PopoverController {
 
         window.contentView = visualEffectView
 
+        applyTransparency()
         buildNavBar()
     }
 
@@ -138,6 +182,14 @@ final class PopoverController {
         wc.onContentHeightChanged = { [weak self] height in
             self?.applyContentHeight(height)
         }
+    }
+
+    /// Apply the user's transparency preference to the visual effect view.
+    func applyTransparency() {
+        let level = PopoverTransparency.current
+        visualEffectView.material = level.material
+        visualEffectView.blendingMode = level.blendingMode
+        visualEffectView.state = level.state
     }
 
     /// Configure auto-height behavior. When enabled, the popover resizes to fit web content

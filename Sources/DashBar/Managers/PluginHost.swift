@@ -11,6 +11,18 @@ final class PluginHost {
     private var webControllers: [String: WebContentController] = [:]
     private var outputCache: [String: String] = [:]
 
+    init() {
+        NotificationCenter.default.addObserver(
+            forName: .transparencyChanged,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            MainActor.assumeIsolated {
+                self?.popovers.values.forEach { $0.applyTransparency() }
+            }
+        }
+    }
+
     func reload() {
         let scanner = PluginScanner()
         let descriptors = scanner.scan()
